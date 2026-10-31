@@ -1,0 +1,4 @@
+backend/data/*.db
+ml/data/raw/*.csv
+__pycache__/
+.env

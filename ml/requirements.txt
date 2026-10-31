@@ -1,0 +1,4 @@
+numpy
+scikit-learn
+pandas
+cairosvg   # optional, only to preview sign images

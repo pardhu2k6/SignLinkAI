@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SignLink AI — AI-Powered Sign Language Interpreter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<!-- <script>window.SIGNLINK_API = 'https://your-backend.example.com'</script> -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3.1675466124/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/hands.js" crossorigin="anonymous"></script>
+</head>
+<body>
+<header class="nav">
+  <a class="brand" href="#/home">◈ SignLink AI</a>
+  <nav class="nav-links">
+    <a data-p="home" href="#/home">🏠 Home</a><a data-p="communicate" href="#/communicate">💬 Communicate</a>
+    <a data-p="learn" href="#/learn">📖 Learn</a><a data-p="history" href="#/history">📋 History</a><a data-p="about" href="#/about">◈ About</a>
+  </nav>
+  <div class="nav-right"><span class="xp">⚡ <b id="xp">0</b> XP</span><button id="theme" class="icon-btn" title="Dark mode">🌙</button><button id="sos" class="sos">🚨 SOS</button></div>
+</header>
+
+<main>
+<!-- HOME -->
+<section id="page-home" class="page">
+  <div class="hero">
+    <h1>AI-Powered<br><span>Sign Language</span><br>Interpreter</h1>
+    <p>Real-time sign recognition → Text → Speech. Runs fully in your browser, no install required.</p>
+    <div class="cta"><a class="btn primary" href="#/communicate">▶ Start Now</a><a class="btn light" href="#/learn">📖 Learn Signs</a></div>
+    <div class="stats">
+      <div><b id="st-classes">—</b><span>Signs</span></div><div><b id="st-lessons">—</b><span>Lessons</span></div>
+      <div><b id="st-acc">—</b><span>Accuracy</span></div><div><b>14</b><span>Features</span></div>
+    </div>
+  </div>
+  <div class="features">
+    <div class="card"><div class="ficon">🖐️</div><b>21-Point Tracking</b><p>MediaPipe detects all hand landmarks at 30fps.</p></div>
+    <div class="card"><div class="ficon">🧠</div><b>Pretrained Model</b><p>Ready-to-use neural net runs on-device in under a millisecond.</p></div>
+    <div class="card"><div class="ficon">🔊</div><b>Text to Speech</b><p>Speak recognized signs aloud via Web Speech API.</p></div>
+    <div class="card"><div class="ficon">🧩</div><b>Sentence Builder</b><p>Form full sentences from individual signs with AI.</p></div>
+  </div>
+</section>
+
+<!-- COMMUNICATE -->
+<section id="page-communicate" class="page" hidden>
+  <div class="two-col">
+    <div>
+      <div class="panel">
+                <div class="video-wrap">
+                    <div id="c-live" class="live-label"></div><div class="ring"><i id="c-ring"></i></div>
+          <div id="c-cam-overlay" class="overlay"><div class="frame"><div class="muted">📷<br>Camera not started</div>
+            <button id="c-start" class="btn primary">Start Camera</button><small>KEEP HAND WITHIN THIS FRAME</small></div></div>
+        </div>
+        <p class="hint"><button id="c-stop" class="link-btn">⏹ Stop camera</button>ⓘ Maintain good lighting. Keep hand centred in frame. Letters are detected after ~0.5 second of holding. <b>J and Z:</b> make the pose (J = little finger up, Z = index finger up), then draw a big letter in the air — or tap +J / +Z.</p>
+        <p id="c-nomodel" class="warn" hidden>⚠ Model file <code>frontend/model/model.json</code> not found or failed to load.</p>
+      </div>
+      <div class="panel">
+        <h4 class="label">SENTENCE BUILDER</h4><div id="c-sentence" class="sentence"></div>
+        <div class="btn-row"><button id="b-space" class="btn soft">␣ Space</button><button id="b-del" class="btn danger-soft">⌫ Delete</button><button id="b-clear" class="btn grey">✕ Clear</button><button id="b-speak" class="btn green">🔊 Speak</button><button id="b-save" class="btn soft">💾 Save</button><button id="b-j" class="btn grey" title="Add J without drawing it">+J</button><button id="b-z" class="btn grey" title="Add Z without drawing it">+Z</button></div>
+      </div>
+    </div>
+    <div>
+      <div class="panel"><div class="ph"><h4>◈ Gesture Stream</h4><button id="s-clear" class="link">CLEAR ALL</button></div>
+        <div id="c-stream" class="stream"></div><button id="s-form" class="btn primary wide">✦ Form Sentence</button>
+        <div class="fmt-row"><button class="fmt" data-fmt="sentence">Aa Sentence case</button><button class="fmt" data-fmt="title">Title Case</button><button class="fmt" data-fmt="lower">lower</button><button class="fmt" data-fmt="upper">UPPER</button><button class="fmt" data-fmt=".">.</button><button class="fmt" data-fmt="?">?</button><button class="fmt" data-fmt="!">!</button><button class="fmt" data-fmt="split">✂ Split words</button></div>
+        <div id="s-result" class="out result" hidden></div></div>
+      <div class="panel"><h4>🌐 Translate</h4><h5 class="label">TRANSLATE SENTENCE TO</h5><select id="c-lang" class="wide"></select>
+        <div id="c-out" class="out">—</div><button id="c-translate" class="btn primary wide">Translate ↗</button>
+        <div class="btn-row"><button id="c-tr-speak" class="btn soft">🔊 Speak translation</button><button id="c-tr-open" class="btn grey">Google Translate ↗</button></div></div>
+      <div class="panel"><h4>🖐️ Hand Data</h4>
+        <dl class="data"><dt>Hands detected</dt><dd id="d-hands">0</dd><dt>Dominant hand</dt><dd id="d-hand">—</dd><dt>Fingers extended</dt><dd id="d-fingers">—</dd><dt>Confidence</dt><dd id="d-conf">—</dd><dt>Frame rate</dt><dd id="d-fps">—</dd></dl></div>
+    </div>
+  </div>
+</section>
+
+<!-- LEARN -->
+<section id="page-learn" class="page" hidden>
+  <div class="narrow">
+    <h2>Learn Sign Language</h2><p class="muted">Practise with your live camera. Earn XP for each completed lesson.</p>
+    <div class="panel big">
+      <h4>📷 Live Practice Camera</h4>
+      <div class="learn-grid">
+        <div class="video-wrap sm">          <div id="l-overlay" class="overlay"><div class="muted">📷<br>Camera off</div><button id="l-start" class="btn primary">Enable Camera</button></div></div>
+        <div class="detect">
+          <h5 class="label center">DETECTED SIGN</h5><div id="l-sign" class="big-sign">—</div><b id="l-msg" class="center">Show a sign to the camera</b>
+          <div class="meter"><i id="l-bar"></i></div><div id="l-pct" class="center muted">0%</div>
+          <p class="hint center"><button id="l-stop" class="link-btn">⏹ Stop camera</button> 💡 Hold sign steady 0.5–1s · Face palm to camera</p>
+          <div class="train-box"><h5 class="label">📊 MY PROGRESS</h5><div class="kv"><span>Letters completed</span><b id="l-prog">0</b></div><button id="l-reset" class="btn danger-outline wide">Reset Progress</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel big" id="l-target-wrap"><h4>📘 How to sign it</h4><div id="l-target" class="target"></div></div>
+    <div id="l-chips" class="chips"></div><div id="l-cards" class="cards"></div>
+  </div>
+</section>
+
+<!-- HISTORY -->
+<section id="page-history" class="page" hidden>
+  <div class="narrow sm-w"><h2>Conversation History</h2><p class="muted">All recognized signs and formed sentences saved with timestamps.</p>
+    <div class="btn-row"><button id="h-export" class="btn green">⬇ Export CSV</button><button id="h-clear" class="btn danger-soft">✕ Clear All</button></div>
+    <table class="table"><thead><tr><th>SIGN/TEXT</th><th>SENTENCE</th><th>TIME</th><th>ACTION</th></tr></thead><tbody id="h-body"></tbody></table></div>
+</section>
+
+<!-- ABOUT -->
+<section id="page-about" class="page" hidden>
+  <div class="narrow sm-w"><h2>About SignLink AI</h2>
+    <p>SignLink AI turns hand signs into text and speech in real time. MediaPipe tracks 21 hand landmarks, a pretrained neural network classifies each pose in under a millisecond, and a temporal stabiliser turns noisy frames into clean, confirmed signs.</p>
+    <p>Built for accessibility — to help people with hearing or speech impairments communicate, and to help anyone learn sign language.</p></div>
+</section>
+</main>
+
+<div id="toast"></div>
+<div id="sos-modal" class="modal" hidden>
+  <div class="modal-box" id="sos-menu">
+    <h3>🚨 Emergency SOS</h3>
+    <div class="sos-grid">
+      <button class="sos-opt" data-k="help"><span>🆘</span>Need Help</button>
+      <button class="sos-opt" data-k="medical"><span>🏥</span>Medical</button>
+      <button class="sos-opt" data-k="police"><span>👮</span>Call Police</button>
+      <button class="sos-opt" data-k="fire"><span>🔥</span>Fire</button>
+      <button class="sos-opt" data-k="breathe"><span>🫁</span>Can't Breathe</button>
+      <button class="sos-opt" data-k="lost"><span>📍</span>I am Lost</button>
+    </div>
+    <button id="sos-contacts-btn" class="sos-close">👥 Emergency contacts (<span id="ct-count">0</span>/5)</button>
+    <button id="sos-close" class="sos-close">Close</button>
+  </div>
+  <div class="modal-box alert" id="sos-alert" hidden>
+    <div id="sos-emoji" class="sos-big">🆘</div><h1 id="sos-title"></h1><p id="sos-msg"></p><p id="sos-loc" class="sos-loc"></p>
+    <div class="btn-row center-row"><a id="sos-call" class="btn danger-solid" href="tel:112">📞 Call 112</a><button id="sos-repeat" class="btn light">🔊 Repeat</button><button id="sos-share" class="btn light" hidden>📤 Share location</button></div>
+    <div id="sos-status" class="sos-status"></div>
+    <div class="btn-row center-row"><button id="sos-resend" class="btn light">📨 Resend alerts</button></div>
+    <button id="sos-back" class="sos-close">← Back</button>
+  </div>
+  <div class="modal-box" id="sos-contacts" hidden>
+    <h3>👥 Emergency contacts</h3>
+    <p class="small muted">Up to 5 people. When you tap an SOS option they are alerted with your message and location.</p>
+    <div class="ct-top"><input id="ct-sender" placeholder="Your name" maxlength="40"><input id="ct-cc" placeholder="+91" maxlength="5" title="Default country code"></div>
+    <div id="ct-rows"></div>
+    <div class="btn-row"><button id="ct-save" class="btn primary">Save</button><button id="ct-test" class="btn light">Send test alert</button></div>
+    <div id="ct-status" class="small"></div>
+    <button id="ct-back" class="sos-close">← Back</button>
+  </div>
+</div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

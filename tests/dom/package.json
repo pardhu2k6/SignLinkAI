@@ -1,0 +1,2 @@
+{ "private": true, "type": "module", "devDependencies": { "esbuild": "*", "jsdom": "*" },
+  "scripts": { "test": "node dom_sos.test.mjs && node dom_comm.test.mjs" } }
